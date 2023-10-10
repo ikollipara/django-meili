@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-meili"
+version = "0.0.1"
+authors = [{ name = "Ian Kollipara", email = "ian.kollipara@cune.edu" }]
+description = "Django integration with Meilisearch"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["django", "meilisearch"]
+
+[project.urls]
+"Homepage" = "https://github.com/ikollipara/django-meili"
+"Bug Tracker" = "https://github.com/ikollipara/django-meili/issues"
