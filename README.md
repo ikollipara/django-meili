@@ -59,3 +59,7 @@ Attributes:
 | **displayed_fields**  | `tuple[str]` | The fields to display. By default uses all. |
 | **searchable_fields** | `tuple[str]` | The fields to search. By default uses all.  |
 | **filterable_fields** | `tuple[str]` | The fields to filter. By default uses none. |
+
+---
+
+Copyright 2023 Ian Kollipara <<ian.kollipara@cune.edu>>
