@@ -31,4 +31,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flit
     - name: Publish package
-      run: FLIT_USERNAME=__token__ FLIT_PASSWORD=${{ secrets.PYPI_API_SECRET }} python -m flit publish
+      run: python -m flit publish
+      env:
+        FLIT_USERNAME: __token__
+        FLIT_PASSWORD: ${{ secrets.PYPI_API_SECRET }}
