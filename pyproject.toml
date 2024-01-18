@@ -1,12 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name = "django-meili"
-version = "0.0.1"
 authors = [{ name = "Ian Kollipara", email = "ian.kollipara@cune.edu" }]
-description = "Django integration with Meilisearch"
+dynamic = ["version", "description"]
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [

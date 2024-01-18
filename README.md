@@ -9,6 +9,14 @@ A package to integrate Meilisearch with Django in a seamless way.
 Set the following variables in `settings.py`.
 
 ```python
+MEILISEARCH = {
+   "HOST": "localhost",
+   "PORT": 7700,
+   "HTTPS": False,
+   "MASTER_KEY": "...",
+   "SYNC": False,
+   "
+}
 MEILI_HOST=localhost # This is the host for meilisearch
 MEILI_PORT=7700      # The port to listen on
 MEILI_HTTPS=False   # Is the meilisearch running on http or https
@@ -39,6 +47,16 @@ class Post(IndexMixin, models.Model):
     # Attributes to handle in Meilisearch
     displayed_fields = ("title", "body")
     searchable_fields = ("title", "body")
+
+    def __str__(self):
+        return self.title
+```
+
+Then when you are ready to search this model, just use the built-in "queryset".
+```python
+Post.objects.create(title="Hello", body="World")
+posts = Post.meilisearch.search("hello") # Returns a Django Queryset of results
+print(posts.first()) # Hello
 ```
 
 ## API

@@ -13,7 +13,7 @@ class DjangoMeiliConfig(AppConfig):
 
         from django.db.models.signals import post_save, post_delete
         from django.conf import settings
-        from .models import IndexMixin, client
+        from .models import IndexMixin, _client
 
         def add_model(model):
             """
@@ -23,12 +23,14 @@ class DjangoMeiliConfig(AppConfig):
 
             def inner(**kwargs):
                 if kwargs["instance"].meili_filter():
-                    task = client.get_index(model.__name__).add_documents(
-                        [kwargs["instance"].meili_serialize()]
+                    serialized = kwargs["instance"].meili_serialize()
+                    pk = kwargs["instance"].pk
+                    task = _client.get_index(model.__name__).add_documents(
+                        [serialized | {"id": pk, "pk": pk}]
                     )
 
                     if settings.DEBUG:
-                        finished = client.wait_for_task(task.task_uid)
+                        finished = _client.wait_for_task(task.task_uid)
                         if finished.status == "failed":
                             raise Exception(finished)
 
@@ -42,11 +44,11 @@ class DjangoMeiliConfig(AppConfig):
 
             def inner(**kwargs):
                 if kwargs["instance"].meili_filter():
-                    task = client.get_index(model.__name__).delete_document(
+                    task = _client.get_index(model.__name__).delete_document(
                         kwargs["instance"].pk
                     )
                     if settings.DEBUG:
-                        finished = client.wait_for_task(task.task_uid)
+                        finished = _client.wait_for_task(task.task_uid)
                         if finished.status == "failed":
                             raise Exception(finished)
 
