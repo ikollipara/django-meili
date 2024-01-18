@@ -14,13 +14,8 @@ MEILISEARCH = {
    "PORT": 7700,
    "HTTPS": False,
    "MASTER_KEY": "...",
-   "SYNC": False,
-   "
+   "SYNC": False, # Should Meilisearch action resolve before continuing
 }
-MEILI_HOST=localhost # This is the host for meilisearch
-MEILI_PORT=7700      # The port to listen on
-MEILI_HTTPS=False   # Is the meilisearch running on http or https
-MEILI_MASTER_KEY="..." # Meilisearch's master key
 ```
 
 Register the app in `INSTALLED_APPS`
