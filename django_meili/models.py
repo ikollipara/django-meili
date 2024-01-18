@@ -60,7 +60,7 @@ class IndexQuerySet:
     def count(self):
         return self.index.get_stats().number_of_documents
 
-    def order_by(self, *fields):
+    def order_by(self, **fields):
         for field in fields:
             if field.startswith("-"):
                 self.__sort.append(f"{field[1:]}:desc")
