@@ -1,3 +1,11 @@
+"""
+apps.py
+Ian Kollipara <ian.kollipara@gmail.com>
+
+This module contains the Django app configuration for the Django MeiliSearch app.
+"""
+
+
 from django.apps import AppConfig
 
 
@@ -16,10 +24,20 @@ class DjangoMeiliConfig(AppConfig):
         from .models import IndexMixin, _client
 
         def add_model(**kwargs):
+            """ Add a model to the MeiliSearch index.
+
+            This function is called when a model is saved and adds the model to the MeiliSearch index.
+            """
+
             model: IndexMixin = kwargs["instance"]
             if model.meili_filter():
                 serialized = model.meili_serialize()
+
+                # Since the primary key can be any field, we need to check if it is 'pk' or another field.
+                # If its 'pk', we can just use the model.pk, otherwise we need to get the value from the field.
                 pk = model.pk if model._meilisearch['primary_key'] == 'pk' else model._meta.get_field(model._meilisearch['primary_key']).value_from_object(model)
+
+                # This bit makes sure that geo is only added if the model supports it.
                 geo = model.meili_geo() if model._meilisearch['supports_geo'] else None
                 task = _client.get_index(model._meilisearch['index_name']).add_documents(
                     [serialized | {"id": pk, "pk": model.pk} | ({"_geo": geo} if geo else {})]
@@ -30,16 +48,26 @@ class DjangoMeiliConfig(AppConfig):
                         raise Exception(finished)
 
         def delete_model(**kwargs):
+            """ Delete a model from the MeiliSearch index.
+
+            This function is called when a model is deleted and removes the model from the MeiliSearch index.
+            """
+
             model: IndexMixin = kwargs["instance"]
             if model.meili_filter():
-                task = _client.get_index(model._meilisearch['index_name']).delete_document(
-                    model._meta.get_field(model._meilisearch['primary_key']).value_from_object(model)
-                )
+
+                # Since the primary key can be any field, we need to check if it is 'pk' or another field.
+                # If its 'pk', we can just use the model.pk, otherwise we need to get the value from the field.
+                pk = model._meta.get_field(model._meilisearch['primary_key']).value_from_object(model) if model._meilisearch['primary_key'] != 'pk' else model.pk
+
+                task = _client.get_index(model._meilisearch['index_name']).delete_document(pk)
                 if settings.DEBUG:
                     finished = _client.wait_for_task(task.task_uid)
                     if finished.status == "failed":
                         raise Exception(finished)
 
+        # This loop connects the add_model and delete_model functions to the post_save and post_delete signals of all
+        # Its also why the `django_meili` app needs to be loaded before all the user apps in the `INSTALLED_APPS` list.
         for model in IndexMixin.__subclasses__():
             post_save.connect(add_model, sender=model)
             post_delete.connect(delete_model, sender=model)

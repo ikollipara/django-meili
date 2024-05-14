@@ -29,10 +29,10 @@ class Point(NamedTuple):
     lng: float | str
 
 class IndexQuerySet:
-    """
-    IndexQuerySet is a wrapper around the MeiliSearch index
-    to allow for easy searching and filtering. It mimics
-    the QuerySet API, although it is not a subclass.
+    """ QuerySet for a MeiliSearch index.
+
+    This class provides a way to interact with a MeiliSearch index for a given model.
+    The queryset mimics the Django QuerySet API and provides methods to filter, sort, and search the index.
     """
 
     def __init__(self, model: "IndexMixin"):
@@ -60,9 +60,33 @@ class IndexQuerySet:
             raise TypeError("IndexQuerySet indices must be slices")
 
     def count(self) -> int:
+        """ Returns the number of documents in the index.
+
+        Note: This method is not specific to the current queryset and will return the total number of documents in the index.
+        """
+
         return self.index.get_stats().number_of_documents
 
     def order_by(self, *fields: str):
+        """ Orders the queryset by the given fields.
+
+        This mimics the Django QuerySet API and allows for ordering by multiple fields.
+        The fields can be prefixed with "-" to indicate descending order.
+
+        For example:
+        ```python
+        Model.meilisearch.order_by("field1", "-field2")
+        ```
+
+        For geosearch, the special geoPoint construct can be used.
+
+        For example:
+        ```python
+        Model.meilisearch.order_by("geoPoint(lat, lng)")
+        Model.meilisearch.order_by("-geoPoint(lat, lng)")
+        ```
+        """
+
         for field in fields:
             geopoint = "_" if "geoPoint" in field else ""
             if field.startswith("-"):
@@ -72,6 +96,36 @@ class IndexQuerySet:
         return self
 
     def filter(self, *geo_filters, **filters) -> Self:
+        """ Filters the queryset by the given filters.
+
+        This set of filtering mimics the Django QuerySet API and allows for filtering by multiple fields.
+        The currently implemented filters are:
+        - exact: Filters for an exact match.
+        - gte: Filters for greater than or equal to.
+        - gt: Filters for greater than.
+        - lte: Filters for less than or equal to.
+        - lt: Filters for less than.
+        - in: Filters for a value in a list.
+        - range: Filters for a value in a range.
+        - exists: Filters for the existence of a field.
+        - isnull: Filters for the nullness of a field.
+
+        For example:
+        ```python
+        Model.meilisearch.filter(field1__exact="value", field2__gte=10, field3__in=[1, 2, 3])
+        ```
+
+        For geosearch, the Radius and BoundingBox classes can be used, and should be passed as unnamed arguments.
+        If the model does not support geosearch, a TypeError will be raised.
+        If the provided positional arguments are not of type Radius or BoundingBox, a TypeError will be raised.
+
+        For example:
+        ```python
+        Model.meilisearch.filter(Radius(lat, lng, radius))
+        Model.meilisearch.filter(BoundingBox(top_right, bottom_left))
+        ```
+        """
+
         for geo_filter in geo_filters:
             if not self.model._meilisearch['supports_geo']:
                 raise TypeError(
@@ -151,14 +205,39 @@ class IndexQuerySet:
         return self
 
     def matching_strategy(self, strategy: Literal["last", "all"]):
+        """ Sets the matching strategy for the search.
+
+        The matching strategy can be either "last" or "all".
+        """
+
         self.__matching_strategy = strategy
         return self
 
     def attributes_to_search_on(self, *attributes):
+        """ Sets the attributes to search on.
+
+        This method allows for setting the attributes to search on for the search query.
+
+        For example:
+        ```python
+        Model.meilisearch.attributes_to_search_on("title", "body")
+        ```
+        """
+
         self.__attributes_to_search_on.append(*attributes)
         return self
 
     def search(self, q: str = ""):
+        """ Searches the index for the given query.
+
+        This method searches the index for the given query and returns the results as an actual Django QuerySet.
+
+        For example:
+        ```python
+        Model.meilisearch.search("Hello World") # Returns a Django QuerySet
+        ```
+        """
+
         results = self.index.search(
             q,
             {

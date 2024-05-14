@@ -1,14 +1,18 @@
-from typing import Iterable, Literal, Optional, TypedDict
+"""
+models.py
+Ian Kollipara <ian.kollipara@gmail.com>
+
+This module contains the models for the Django MeiliSearch app.
+"""
+
+from typing import Iterable, TypedDict
 from django.db import models
-from meilisearch.models.task import Task
-from meilisearch.client import TaskInfo
+
 from ._client import client as _client
 from .querysets import IndexQuerySet
 
 # Create your models here.
 
-
-_current_indices = [i.uid for i in _client.get_indexes()]
 
 class MeiliGeo(TypedDict):
     lat: float | str
@@ -27,20 +31,41 @@ class IndexMixin(models.Model):
     """
     Mixin to provide Meilisearch Index for the given model.
 
+    This mixin will create a Meilisearch index for the model and provide a
+    queryset to interact with that index.
+
+    To use this mixin, create a model that inherits from it and set the
+    MeiliMeta class with the following attributes:
+    - displayed_fields: The fields to display in search results.
+    - searchable_fields: The fields to search on.
+    - filterable_fields: The fields to filter on.
+    - sortable_fields: The fields to sort on.
+    - supports_geo: Whether the model supports geolocation.
+    - index_name: The name of the index in Meilisearch.
+    - primary_key: The primary key for the model.
+
+    This mixin also defines a few methods that can be overridden:
+    - meili_filter: A function to decide if the model should be added to meilisearch.
+    - meili_serialize: How to serialize the model to a dictionary to be used by meilisearch.
+    - meili_geo: Return the geo-location for the model. (If the model supports geolocation, else raise a ValueError.)
+
+    Example:
     ```python
+    from django.db import models
+    from django_meili.models import IndexMixin
+
     class Post(IndexMixin, models.Model):
-        id = models.UUIDField()
         title = models.CharField(max_length=255)
         body = models.TextField()
 
-        # Attributes to handle in Meilisearch
-        displayed_fields = ("title", "body")
-        searchable_fields = ("title", "body")
-    ```
+        class MeiliMeta:
+            filterable_fields = ("title",)
+            searchable_fields = ("id", "title", "body")
+            displayed_fields = ("id", "title", "body")
 
-    ## Methods
-    - meili_filter(self) -> bool
-    - meili_serialize(self) -> dict[[str, Any]]
+        def __str__(self):
+            return self.title
+    ```
     """
 
     meilisearch: IndexQuerySet
