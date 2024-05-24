@@ -4,6 +4,11 @@
 
 A package to integrate Meilisearch with Django in a seamless way. This pacakge is tested on Meilisearch `v1.60`.
 
+## Install
+```
+pip install django_meili
+```
+
 ## Usage
 ### Settings
 Update your `settings.py` file to include the following:
