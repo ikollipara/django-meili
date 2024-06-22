@@ -1,7 +1,9 @@
 from django.db import models
+
 from django_meili.models import IndexMixin, MeiliGeo
 
 # Create your models here.
+
 
 class PostNoGeo(IndexMixin, models.Model):
     """Model definition for Post."""
@@ -19,9 +21,11 @@ class PostNoGeo(IndexMixin, models.Model):
         filterable_fields = ("title",)
         searchable_fields = ("id", "title", "body")
         displayed_fields = ("id", "title", "body")
+        index_name = "posts_not_geo"
 
     def __str__(self):
         return self.title
+
 
 class Post(IndexMixin, models.Model):
     """Model definition for Post."""

@@ -6,6 +6,7 @@ This module contains the models for the Django MeiliSearch app.
 """
 
 from typing import Iterable, TypedDict
+
 from django.db import models
 
 from ._client import client as _client
@@ -18,6 +19,7 @@ class MeiliGeo(TypedDict):
     lat: float | str
     lng: float | str
 
+
 class _Meili(TypedDict):
     primary_key: str
     index_name: str
@@ -26,6 +28,7 @@ class _Meili(TypedDict):
     filterable_fields: Iterable[str] | None
     sortable_fields: Iterable[str] | None
     supports_geo: bool
+
 
 class IndexMixin(models.Model):
     """
@@ -93,14 +96,14 @@ class IndexMixin(models.Model):
             filterable_fields = ("_geo",) + (filterable_fields or ())
             sortable_fields = ("_geo",) + (sortable_fields or ())
 
-        (_client
-         .create_index(index_name, primary_key)
-         .update_display(index_name, displayed_fields)
-         .update_searchable(index_name, searchable_fields)
-         .update_filterable(index_name, filterable_fields)
-         .update_sortable(index_name, sortable_fields))
+        (
+            _client.create_index(index_name, primary_key)
+            .update_display(index_name, displayed_fields)
+            .update_searchable(index_name, searchable_fields)
+            .update_filterable(index_name, filterable_fields)
+            .update_sortable(index_name, sortable_fields)
+        )
 
-        cls.meilisearch = IndexQuerySet(cls)
         cls._meilisearch = _Meili(
             primary_key=primary_key,
             displayed_fields=displayed_fields,
@@ -110,6 +113,7 @@ class IndexMixin(models.Model):
             supports_geo=supports_geo,
             index_name=index_name,
         )
+        cls.meilisearch = IndexQuerySet(cls)
 
         super().__init_subclass__()
 
@@ -132,8 +136,9 @@ class IndexMixin(models.Model):
         By default uses django.core.serializers.serialize and json.loads
         """
 
-        from django.core.serializers import serialize
         from json import loads
+
+        from django.core.serializers import serialize
 
         serialized_model = loads(
             serialize(
@@ -147,7 +152,7 @@ class IndexMixin(models.Model):
         return serialized_model["fields"]
 
     def meili_geo(self) -> MeiliGeo:
-        """ Return the geo-location for the model.
+        """Return the geo-location for the model.
 
         If the model does not support geolocation, raise a ValueError.
         """

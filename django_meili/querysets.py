@@ -6,38 +6,46 @@ This module contains the QuerySet classes for the Django MeiliSearch app.
 """
 
 # Imports
-from typing import NamedTuple, Literal, Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, NamedTuple, Self, Type
+
 from ._client import _client
 
 if TYPE_CHECKING:
     from .models import IndexMixin
 
+
 class Radius(NamedTuple):
-    """ A radius for a geosearch query. """
+    """A radius for a geosearch query."""
+
     lat: float | str
     lng: float | str
     radius: int
 
+
 class BoundingBox(NamedTuple):
-    """ A bounding box for a geosearch query. """
+    """A bounding box for a geosearch query."""
+
     top_right: tuple[float | str, float | str]
     bottom_left: tuple[float | str, float | str]
 
+
 class Point(NamedTuple):
-    """ A point for a geosearch query. """
+    """A point for a geosearch query."""
+
     lat: float | str
     lng: float | str
 
+
 class IndexQuerySet:
-    """ QuerySet for a MeiliSearch index.
+    """QuerySet for a MeiliSearch index.
 
     This class provides a way to interact with a MeiliSearch index for a given model.
     The queryset mimics the Django QuerySet API and provides methods to filter, sort, and search the index.
     """
 
-    def __init__(self, model: "IndexMixin"):
+    def __init__(self, model: Type["IndexMixin"]):
         self.model = model
-        self.index = _client.get_index(model.__name__)
+        self.index = _client.get_index(model._meilisearch["index_name"])
         self.__offset = 0
         self.__limit = 20
         self.__filters: list[str] = []
@@ -60,7 +68,7 @@ class IndexQuerySet:
             raise TypeError("IndexQuerySet indices must be slices")
 
     def count(self) -> int:
-        """ Returns the number of documents in the index.
+        """Returns the number of documents in the index.
 
         Note: This method is not specific to the current queryset and will return the total number of documents in the index.
         """
@@ -68,7 +76,7 @@ class IndexQuerySet:
         return self.index.get_stats().number_of_documents
 
     def order_by(self, *fields: str):
-        """ Orders the queryset by the given fields.
+        """Orders the queryset by the given fields.
 
         This mimics the Django QuerySet API and allows for ordering by multiple fields.
         The fields can be prefixed with "-" to indicate descending order.
@@ -96,7 +104,7 @@ class IndexQuerySet:
         return self
 
     def filter(self, *geo_filters, **filters) -> Self:
-        """ Filters the queryset by the given filters.
+        """Filters the queryset by the given filters.
 
         This set of filtering mimics the Django QuerySet API and allows for filtering by multiple fields.
         The currently implemented filters are:
@@ -127,7 +135,7 @@ class IndexQuerySet:
         """
 
         for geo_filter in geo_filters:
-            if not self.model._meilisearch['supports_geo']:
+            if not self.model._meilisearch["supports_geo"]:
                 raise TypeError(
                     f"Model {self.model.__name__} does not support geo filters"
                 )
@@ -205,7 +213,7 @@ class IndexQuerySet:
         return self
 
     def matching_strategy(self, strategy: Literal["last", "all"]):
-        """ Sets the matching strategy for the search.
+        """Sets the matching strategy for the search.
 
         The matching strategy can be either "last" or "all".
         """
@@ -214,7 +222,7 @@ class IndexQuerySet:
         return self
 
     def attributes_to_search_on(self, *attributes):
-        """ Sets the attributes to search on.
+        """Sets the attributes to search on.
 
         This method allows for setting the attributes to search on for the search query.
 
@@ -228,7 +236,7 @@ class IndexQuerySet:
         return self
 
     def search(self, q: str = ""):
-        """ Searches the index for the given query.
+        """Searches the index for the given query.
 
         This method searches the index for the given query and returns the results as an actual Django QuerySet.
 

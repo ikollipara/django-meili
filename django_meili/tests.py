@@ -1,9 +1,12 @@
-from django.test import TestCase, override_settings
-from django_meili.querysets import Radius
-from posts.models import Post, PostNoGeo
 from random import uniform
 
+from django.test import TestCase, override_settings
+
+from django_meili.querysets import Radius
+from posts.models import Post, PostNoGeo
+
 # Create your tests here.
+
 
 def generate_random_coordinates():
     # Define the range of latitude and longitude
@@ -16,13 +19,21 @@ def generate_random_coordinates():
 
     return latitude, longitude
 
+
 @override_settings(MEILISEARCH={"SYNC": True}, DEBUG=True)
 class DjangoMeiliTestCase(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.coordinates = generate_random_coordinates()
-        cls.post = Post.objects.create(title="Hello World", body="This is a test post", lat=cls.coordinates[0], lng=cls.coordinates[1])
-        cls.post_no_geo = PostNoGeo.objects.create(title="Hello World", body="This is a test post")
+        cls.post = Post.objects.create(
+            title="Hello World",
+            body="This is a test post",
+            lat=cls.coordinates[0],
+            lng=cls.coordinates[1],
+        )
+        cls.post_no_geo = PostNoGeo.objects.create(
+            title="Hello World", body="This is a test post"
+        )
         return super().setUpTestData()
 
     def test_post_created(self):
@@ -48,7 +59,12 @@ class DjangoMeiliTestCase(TestCase):
 
     def test_post_search_can_be_filtered_by_geo(self):
         self.assertEqual(
-            Post.meilisearch.filter(Radius(self.coordinates[0], self.coordinates[1], 100)).search().first().title,
+            Post.meilisearch.filter(
+                Radius(self.coordinates[0], self.coordinates[1], 100)
+            )
+            .search()
+            .first()
+            .title,
             "Hello World",
         )
 
@@ -58,6 +74,14 @@ class DjangoMeiliTestCase(TestCase):
 
     def test_post_search_can_be_ordered_by_geo(self):
         self.assertEqual(
-            Post.meilisearch.order_by(f"geoPoint({self.coordinates[0]}, {self.coordinates[1]})").search().first().title,
+            Post.meilisearch.order_by(
+                f"geoPoint({self.coordinates[0]}, {self.coordinates[1]})"
+            )
+            .search()
+            .first()
+            .title,
             "Hello World",
         )
+
+    def test_post_no_geo_has_custom_index_name(self):
+        self.assertEqual(PostNoGeo._meilisearch["index_name"], "posts_not_geo")
