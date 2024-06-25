@@ -52,7 +52,7 @@ class _DjangoMeiliSettings:
     sync: bool
 
     @classmethod
-    def from_settings(cls) -> "DjangoMeiliSettings":
+    def from_settings(cls) -> "_DjangoMeiliSettings":
         from django.conf import settings
 
         return cls(

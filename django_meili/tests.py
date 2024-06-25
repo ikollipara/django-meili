@@ -85,3 +85,9 @@ class DjangoMeiliTestCase(TestCase):
 
     def test_post_no_geo_has_custom_index_name(self):
         self.assertEqual(PostNoGeo._meilisearch["index_name"], "posts_not_geo")
+
+    def test_django_meili_only_makes_two_requests_per_index_creation(self):
+        tasks = Post._meilisearch["tasks"]
+        self.assertEqual(len(tasks), 2)
+        tasks = PostNoGeo._meilisearch["tasks"]
+        self.assertEqual(len(tasks), 2)

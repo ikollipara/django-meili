@@ -8,6 +8,7 @@ This module contains the models for the Django MeiliSearch app.
 from typing import Iterable, TypedDict
 
 from django.db import models
+from meilisearch.models.task import TaskInfo
 
 from ._client import client as _client
 from .querysets import IndexQuerySet
@@ -28,6 +29,7 @@ class _Meili(TypedDict):
     filterable_fields: Iterable[str] | None
     sortable_fields: Iterable[str] | None
     supports_geo: bool
+    tasks: list[TaskInfo]
 
 
 class IndexMixin(models.Model):
@@ -96,13 +98,16 @@ class IndexMixin(models.Model):
             filterable_fields = ("_geo",) + (filterable_fields or ())
             sortable_fields = ("_geo",) + (sortable_fields or ())
 
-        (
-            _client.create_index(index_name, primary_key)
-            .update_display(index_name, displayed_fields)
-            .update_searchable(index_name, searchable_fields)
-            .update_filterable(index_name, filterable_fields)
-            .update_sortable(index_name, sortable_fields)
-        )
+        tasks = [
+            _client.create_index(index_name, primary_key),
+            _client.with_settings(
+                index_name,
+                displayed_fields,
+                searchable_fields,
+                filterable_fields,
+                sortable_fields,
+            ),
+        ]
 
         cls._meilisearch = _Meili(
             primary_key=primary_key,
@@ -112,6 +117,7 @@ class IndexMixin(models.Model):
             sortable_fields=sortable_fields,
             supports_geo=supports_geo,
             index_name=index_name,
+            tasks=tasks,
         )
         cls.meilisearch = IndexQuerySet(cls)
 
