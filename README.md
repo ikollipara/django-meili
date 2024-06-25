@@ -73,6 +73,7 @@ MEILISEARCH = {
     'CLIENT_AGENTS': None, # The client agents for the meilisearch server
     'DEBUG': DEBUG, # Whether to throw exceptions on failed creation of documents
     'SYNC': False, # Whether to execute operations to meilisearch in a synchronous manner (waiting for each rather than letting the task queue operate)
+    'OFFLINE': False, # Whether to make any http requests for the application.
 }
 ```
 

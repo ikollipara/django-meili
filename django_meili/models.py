@@ -7,6 +7,7 @@ This module contains the models for the Django MeiliSearch app.
 
 from typing import Iterable, TypedDict
 
+from django.conf import settings
 from django.db import models
 from meilisearch.models.task import TaskInfo
 
@@ -98,30 +99,39 @@ class IndexMixin(models.Model):
             filterable_fields = ("_geo",) + (filterable_fields or ())
             sortable_fields = ("_geo",) + (sortable_fields or ())
 
-        tasks = [
-            _client.create_index(index_name, primary_key),
-            _client.with_settings(
+        if settings.MEILISEARCH.get("OFFLINE", False):
+            cls._meilisearch = _Meili(
+                primary_key=primary_key,
+                index_name=index_name,
+                displayed_fields=displayed_fields,
+                searchable_fields=searchable_fields,
+                filterable_fields=filterable_fields,
+                sortable_fields=sortable_fields,
+                supports_geo=supports_geo,
+                tasks=[],
+            )
+        else:
+            _client.create_index(index_name, primary_key).with_settings(
                 index_name,
                 displayed_fields,
                 searchable_fields,
                 filterable_fields,
                 sortable_fields,
-            ),
-        ]
+            )
 
         cls._meilisearch = _Meili(
             primary_key=primary_key,
+            index_name=index_name,
             displayed_fields=displayed_fields,
             searchable_fields=searchable_fields,
             filterable_fields=filterable_fields,
             sortable_fields=sortable_fields,
             supports_geo=supports_geo,
-            index_name=index_name,
-            tasks=tasks,
+            tasks=[task for task in _client.tasks],
         )
-        cls.meilisearch = IndexQuerySet(cls)
+        _client.flush_tasks()
 
-        super().__init_subclass__()
+        cls.meilisearch = IndexQuerySet(cls)
 
     def meili_filter(self) -> bool:
         """

@@ -8,7 +8,7 @@ This module contains the QuerySet classes for the Django MeiliSearch app.
 # Imports
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self, Type
 
-from ._client import _client
+from ._client import client
 
 if TYPE_CHECKING:
     from .models import IndexMixin
@@ -44,8 +44,10 @@ class IndexQuerySet:
     """
 
     def __init__(self, model: Type["IndexMixin"]):
+        from ._settings import _DjangoMeiliSettings
+
         self.model = model
-        self.index = _client.get_index(model._meilisearch["index_name"])
+        self.index = client.get_index(model._meilisearch["index_name"])
         self.__offset = 0
         self.__limit = 20
         self.__filters: list[str] = []

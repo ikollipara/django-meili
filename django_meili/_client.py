@@ -13,15 +13,6 @@ from meilisearch.task import TaskInfo
 
 from ._settings import _DjangoMeiliSettings
 
-MEILISEARCH_SETTINGS = _DjangoMeiliSettings.from_settings()
-
-_client = _Client(
-    f"http{'s' if MEILISEARCH_SETTINGS.https else ''}://{MEILISEARCH_SETTINGS.host}:{MEILISEARCH_SETTINGS.port}",
-    MEILISEARCH_SETTINGS.master_key,
-    timeout=MEILISEARCH_SETTINGS.timeout,
-    client_agents=MEILISEARCH_SETTINGS.client_agents,
-)
-
 
 class Client:
     """MeiliSearch client for Django MeiliSearch.
@@ -31,9 +22,20 @@ class Client:
     server.
     """
 
-    def __init__(self, client: _Client):
-        self.client = client
-        self.is_sync = MEILISEARCH_SETTINGS.sync
+    def __init__(self, settings: _DjangoMeiliSettings):
+        self.client = _Client(
+            f"http{'s' if settings.https else ''}://{settings.host}:{settings.port}",
+            settings.master_key,
+            timeout=settings.timeout,
+            client_agents=settings.client_agents,
+        )
+        self.is_sync = settings.sync
+        self.tasks = []
+
+    def flush_tasks(self):
+        """Flush all currently stored tasks."""
+
+        self.tasks = []
 
     def with_settings(
         self,
@@ -59,16 +61,19 @@ class Client:
             Self: The client object.
         """
 
-        return self._handle_sync(
-            self.client.index(index_name).update_settings(
-                {
-                    "displayedAttributes": displayed_fields or ["*"],
-                    "searchableAttributes": searchable_fields or ["*"],
-                    "filterableAttributes": filterable_fields or [],
-                    "sortableAttributes": sortable_fields or [],
-                }
+        self.tasks.append(
+            self._handle_sync(
+                self.client.index(index_name).update_settings(
+                    {
+                        "displayedAttributes": displayed_fields or ["*"],
+                        "searchableAttributes": searchable_fields or ["*"],
+                        "filterableAttributes": filterable_fields or [],
+                        "sortableAttributes": sortable_fields or [],
+                    }
+                )
             )
         )
+        return self
 
     def create_index(self, index_name: str, primary_key: str):
         """Create a new index with the given name and primary key.
@@ -81,9 +86,12 @@ class Client:
             dict: The response from the MeiliSearch server.
         """
         if index_name not in [i.uid for i in self.get_indexes()]:
-            return self._handle_sync(
-                self.client.create_index(index_name, {"primaryKey": primary_key})
+            self.tasks.append(
+                self._handle_sync(
+                    self.client.create_index(index_name, {"primaryKey": primary_key})
+                )
             )
+        return self
 
     def get_index(self, index_name: str):
         """Get an index by name.
@@ -161,4 +169,4 @@ class Client:
         return task
 
 
-client = Client(_client)
+client = Client(_DjangoMeiliSettings.from_settings())

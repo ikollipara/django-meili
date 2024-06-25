@@ -1,7 +1,10 @@
 from random import uniform
 
+from django.db import models
 from django.test import TestCase, override_settings
+from django.test.utils import isolate_apps
 
+from django_meili.models import IndexMixin, MeiliGeo
 from django_meili.querysets import Radius
 from posts.models import Post, PostNoGeo
 
@@ -20,6 +23,57 @@ def generate_random_coordinates():
     return latitude, longitude
 
 
+@isolate_apps("posts", attr_name="apps")
+@override_settings(MEILISEARCH={"OFFLINE": True}, DEBUG=True)
+class OfflineDjangoMeiliTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls) -> None:
+        class PostNoGeo(IndexMixin, models.Model):
+            """Model definition for Post."""
+
+            title = models.CharField(max_length=255)
+            body = models.TextField()
+
+            class MeiliMeta:
+                filterable_fields = ("title",)
+                searchable_fields = ("id", "title", "body")
+                displayed_fields = ("id", "title", "body")
+                index_name = "posts_not_geo"
+
+        class Post(IndexMixin, models.Model):
+            """Model definition for Post."""
+
+            title = models.CharField(max_length=255)
+            body = models.TextField()
+            lat = models.FloatField()
+            lng = models.FloatField()
+
+            def meili_geo(self) -> MeiliGeo:
+                return {
+                    "lat": self.lat,
+                    "lng": self.lng,
+                }
+
+            class MeiliMeta:
+                filterable_fields = ("title",)
+                searchable_fields = ("id", "title", "body")
+                displayed_fields = ("id", "title", "body")
+                supports_geo = True
+
+        cls.Post = Post
+        cls.PostNoGeo = PostNoGeo
+        return super().setUpTestData()
+
+    def test_offline_is_set(self):
+        from django.conf import settings
+
+        self.assertTrue(settings.MEILISEARCH.get("OFFLINE", False))
+
+    def test_offline_does_not_create_index(self):
+        self.assertEqual(self.Post._meilisearch["tasks"], [])
+        self.assertEqual(self.PostNoGeo._meilisearch["tasks"], [])
+
+
 @override_settings(MEILISEARCH={"SYNC": True}, DEBUG=True)
 class DjangoMeiliTestCase(TestCase):
     @classmethod
@@ -34,7 +88,16 @@ class DjangoMeiliTestCase(TestCase):
         cls.post_no_geo = PostNoGeo.objects.create(
             title="Hello World", body="This is a test post"
         )
+
         return super().setUpTestData()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        from django_meili._client import client
+
+        client.client.delete_index(Post._meilisearch["index_name"])
+        client.client.delete_index(PostNoGeo._meilisearch["index_name"])
+        return super().tearDownClass()
 
     def test_post_created(self):
         self.assertEqual(self.post.title, "Hello World")
@@ -91,3 +154,23 @@ class DjangoMeiliTestCase(TestCase):
         self.assertEqual(len(tasks), 2)
         tasks = PostNoGeo._meilisearch["tasks"]
         self.assertEqual(len(tasks), 2)
+
+    def test_django_meili_does_not_sync_when_offline(self):
+        post_no_geo_original_count = PostNoGeo.meilisearch.count()
+
+        post2 = Post.objects.create(
+            title="Hello World",
+            body="This is a test post",
+            lat=self.coordinates[0],
+            lng=self.coordinates[1],
+        )
+        post_updated_count = Post.meilisearch.count()
+        with override_settings(MEILISEARCH={"OFFLINE": True}):
+            PostNoGeo.objects.create(
+                title="Hello World",
+                body="This is a test post",
+            )
+            post2.delete()
+
+        self.assertEqual(PostNoGeo.meilisearch.count(), post_no_geo_original_count)
+        self.assertEqual(Post.meilisearch.count(), post_updated_count)

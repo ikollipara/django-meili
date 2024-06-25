@@ -28,6 +28,7 @@ class DjangoMeiliSettings(TypedDict):
     CLIENT_AGENTS: tuple[str] | None
     DEBUG: bool | None
     SYNC: bool | None
+    OFFLINE: bool | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +51,7 @@ class _DjangoMeiliSettings:
     client_agents: tuple[str] | None
     debug: bool
     sync: bool
+    offline: bool
 
     @classmethod
     def from_settings(cls) -> "_DjangoMeiliSettings":
@@ -64,4 +66,5 @@ class _DjangoMeiliSettings:
             client_agents=settings.MEILISEARCH.get("CLIENT_AGENTS", None),
             debug=settings.MEILISEARCH.get("DEBUG", settings.DEBUG),
             sync=settings.MEILISEARCH.get("SYNC", False),
+            offline=settings.MEILISEARCH.get("OFFLINE", False),
         )
