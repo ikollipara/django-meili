@@ -209,6 +209,12 @@ class DjangoMeiliNonStandardIdTestCase(TestCase):
             self.target_model.meilisearch.search("Hello World").first().title, "Hello World"
         )
 
+    def test_crazy_id_present_in_serializer(self):
+        # {'title': 'Hello World', 'body': 'This is a test post', 'crazy_id': 'WqzyCvZF'}
+        self.assertEqual(
+            list(self.target_model.meilisearch.search("Hello World").first().meili_serialize().keys()),
+            ['title', 'body', 'crazy_id']
+        )
     def test_bad_search_returns_nothing(self):
         self.assertEqual(self.target_model.meilisearch.search("al;kdfja;lsdkfj").count(), 0)
 
