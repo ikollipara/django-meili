@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -127,7 +127,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEILISEARCH = {
     'HTTPS': False,  # Whether HTTPS is enabled for the meilisearch server
     'HOST': 'localhost',  # The host for the meilisearch server
-    'MASTER_KEY': "9D3CCB9680E1EB7040490171C9F8D4E7",  # The master key for meilisearch. See https://www.meilisearch.com/docs/learn/security/basic_security for more detail
+    'MASTER_KEY': os.getenv("MELISEARCH_MASTER_KEY"),  # The master key for meilisearch. See https://www.meilisearch.com/docs/learn/security/basic_security for more detail
     'PORT': 7700,  # The port for the meilisearch server
     'TIMEOUT': None,  # The timeout to wait for when using sync meilisearch server
     'CLIENT_AGENTS': None,  # The client agents for the meilisearch server
