@@ -29,7 +29,7 @@ class DjangoMeiliSettings(TypedDict):
     DEBUG: bool | None
     SYNC: bool | None
     OFFLINE: bool | None
-    DEFAULT_BATCH_SIZE: int | 1000
+    DEFAULT_BATCH_SIZE: int = 1000
 
 
 @dataclass(frozen=True, slots=True)
