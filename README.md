@@ -111,6 +111,13 @@ It attempts to mimic the django queryset API, but differs in 2 notable ways:
 1. To do geo-filtering, you pass a positional argument
 2. Not all queryset operations are implemented.
 
+## Development
+
+1. clone the repo
+2. ./bin/setup.sh
+3. ./bin/test.sh
+4. Develop
+
 ## Contact
 If there are any issues, please feel free to make an issue.
 If you have suggested improvements, please make an issue where we can discuss.
