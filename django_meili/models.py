@@ -49,6 +49,7 @@ class IndexMixin(models.Model):
     - supports_geo: Whether the model supports geolocation.
     - index_name: The name of the index in Meilisearch.
     - primary_key: The primary key for the model.
+    - include_pk_in_search: include the pk in the search results
 
     This mixin also defines a few methods that can be overridden:
     - meili_filter: A function to decide if the model should be added to meilisearch.
@@ -85,6 +86,7 @@ class IndexMixin(models.Model):
         supports_geo: bool = False
         index_name: str = None
         primary_key: str = "pk"
+        include_pk_in_search: bool = False
 
     def __init_subclass__(cls) -> None:
         index_name = getattr(cls.MeiliMeta, "index_name", cls.__name__)
@@ -94,6 +96,7 @@ class IndexMixin(models.Model):
         filterable_fields = getattr(cls.MeiliMeta, "filterable_fields", None)
         sortable_fields = getattr(cls.MeiliMeta, "sortable_fields", None)
         supports_geo = getattr(cls.MeiliMeta, "supports_geo", False)
+        include_pk_in_search = getattr(cls.MeiliMeta, "include_pk_in_search", False)
 
         if supports_geo:
             filterable_fields = ("_geo",) + (filterable_fields or ())
@@ -108,6 +111,7 @@ class IndexMixin(models.Model):
                 filterable_fields=filterable_fields,
                 sortable_fields=sortable_fields,
                 supports_geo=supports_geo,
+                include_pk_in_search=include_pk_in_search,
                 tasks=[],
             )
         else:
@@ -127,6 +131,7 @@ class IndexMixin(models.Model):
             filterable_fields=filterable_fields,
             sortable_fields=sortable_fields,
             supports_geo=supports_geo,
+            include_pk_in_search=include_pk_in_search,
             tasks=[task for task in _client.tasks],
         )
         _client.flush_tasks()
@@ -165,6 +170,10 @@ class IndexMixin(models.Model):
             )
         )[0]
 
+        if getattr(self.MeiliMeta, "include_pk_in_search", False):
+            serialized_model["fields"][self.MeiliMeta.primary_key] = getattr(
+                self, self.MeiliMeta.primary_key
+            )
         return serialized_model["fields"]
 
     def meili_geo(self) -> MeiliGeo:

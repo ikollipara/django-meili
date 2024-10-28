@@ -259,5 +259,7 @@ class IndexQuerySet:
                 "attributesToSearchOn": self.__attributes_to_search_on,
             },
         )
-        hits = results["hits"]
-        return self.model.objects.filter(pk__in=[hit["id"] for hit in hits])
+        id_field = getattr(self.model.MeiliMeta, "primary_key", "id")
+        return self.model.objects.filter(
+            pk__in=[hit[id_field] for hit in results.get("hits", [])]
+        )

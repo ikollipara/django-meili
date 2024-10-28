@@ -6,7 +6,7 @@ from django.test.utils import isolate_apps
 
 from django_meili.models import IndexMixin, MeiliGeo
 from django_meili.querysets import Radius
-from posts.models import Post, PostNoGeo
+from posts.models import Post, PostNoGeo, NonStandardIdPost
 
 # Create your tests here.
 
@@ -174,3 +174,52 @@ class DjangoMeiliTestCase(TestCase):
 
         self.assertEqual(PostNoGeo.meilisearch.count(), post_no_geo_original_count)
         self.assertEqual(Post.meilisearch.count(), post_updated_count)
+
+
+
+@override_settings(MEILISEARCH={"SYNC": True}, DEBUG=True)
+class DjangoMeiliNonStandardIdTestCase(TestCase):
+    target_model = NonStandardIdPost
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.post = cls.target_model.objects.create(
+            title="Hello World",
+            body="This is a test post",
+        )
+
+        return super().setUpTestData()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        from django_meili._client import client
+
+        client.client.delete_index(cls.target_model._meilisearch["index_name"])
+        return super().tearDownClass()
+
+    def test_post_created(self):
+        self.assertEqual(self.post.title, "Hello World")
+        self.assertEqual(self.post.body, "This is a test post")
+
+    def test_post_was_indexed(self):
+        self.assertNotEqual(self.target_model.meilisearch.count(), 0)
+
+    def test_post_search_returns_post(self):
+        self.assertEqual(
+            self.target_model.meilisearch.search("Hello World").first().title, "Hello World"
+        )
+
+    def test_crazy_id_present_in_serializer(self):
+        # {'title': 'Hello World', 'body': 'This is a test post', 'crazy_id': 'WqzyCvZF'}
+        self.assertEqual(
+            list(self.target_model.meilisearch.search("Hello World").first().meili_serialize().keys()),
+            ['title', 'body', 'crazy_id']
+        )
+    def test_bad_search_returns_nothing(self):
+        self.assertEqual(self.target_model.meilisearch.search("al;kdfja;lsdkfj").count(), 0)
+
+    def test_post_search_can_be_filtered(self):
+        self.assertEqual(
+            self.target_model.meilisearch.filter(title="Hello World").search().first().title,
+            "Hello World",
+        )

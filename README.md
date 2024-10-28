@@ -74,6 +74,7 @@ MEILISEARCH = {
     'DEBUG': DEBUG, # Whether to throw exceptions on failed creation of documents
     'SYNC': False, # Whether to execute operations to meilisearch in a synchronous manner (waiting for each rather than letting the task queue operate)
     'OFFLINE': False, # Whether to make any http requests for the application.
+    'DEFAULT_BATCH_SIZE': 1000, # For syncindex the default batch size for import queryset
 }
 ```
 
@@ -109,6 +110,13 @@ The queryset defines the searchable operations on the index.
 It attempts to mimic the django queryset API, but differs in 2 notable ways:
 1. To do geo-filtering, you pass a positional argument
 2. Not all queryset operations are implemented.
+
+## Development
+
+1. clone the repo
+2. ./bin/setup.sh
+3. ./bin/test.sh
+4. Develop
 
 ## Contact
 If there are any issues, please feel free to make an issue.
