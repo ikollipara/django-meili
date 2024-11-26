@@ -23,8 +23,13 @@ INSTALLED_APPS = [
 
 MEILISEARCH = {}
 ```
+
 You must define the `django_meili` application before any of your code that
 uses the application.
+
+### (NEW) Using [`djp`](https://djp.readthedocs.io/en/latest/index.html)
+If you are using DJP as your django plugin manager, then you can simply install the application
+as normal. If you define your own custom settings, it will take priority over the current settings.
 
 ### Example in Models
 Update a model to include the following:

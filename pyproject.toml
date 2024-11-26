@@ -15,6 +15,9 @@ classifiers = [
 ]
 dependencies = ["django", "meilisearch"]
 
+[project.optional-dependencies]
+djp = ["djp"]
+
 [project.urls]
 "Homepage" = "https://github.com/ikollipara/django-meili"
 "Bug Tracker" = "https://github.com/ikollipara/django-meili/issues"
