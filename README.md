@@ -2,7 +2,7 @@
 
 ![](./docs/Meilisearch_-_Django.jpg)
 
-A package to integrate Meilisearch with Django in a seamless way. This pacakge is tested on Meilisearch `v1.60`.
+A package to integrate Meilisearch with Django in a seamless way. This pacakge is tested on Meilisearch `v1.7` - `v1.11`.
 
 ## Install
 ```
