@@ -5,10 +5,12 @@ Ian Kollipara <ian.kollipara@gmail.com>
 This module contains the SyncIndexCommand class for the Django MeiliSearch app.
 """
 
-from typing import Type
+from typing import TYPE_CHECKING
+
+from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.apps import apps
+
 from django_meili._client import client as _client
 from django_meili.models import IndexMixin
 
@@ -63,13 +65,13 @@ class Command(BaseCommand):
             exit(1)
         self.stdout.write(self.style.SUCCESS(f"Synced index for {options['model']}"))
 
-    def _serialize(self, model) -> dict:
+    def _serialize(self, model: IndexMixin) -> dict:
         """
         Serialize the model instance into a dictionary.
         """
 
         serialized = model.meili_serialize()
-        pk = model.pk
+        pk = model._meta.pk.value_to_string(model)
         return serialized | {"id": pk, "pk": pk}
 
     def _resolve_model(self, model: str):

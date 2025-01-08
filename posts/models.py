@@ -1,5 +1,7 @@
-import string
 import random
+import string
+from uuid import uuid4
+
 from django.db import models
 
 from django_meili.models import IndexMixin, MeiliGeo
@@ -60,7 +62,8 @@ class Post(IndexMixin, models.Model):
 
 
 def rand_id():
-    return ''.join(random.choices(string.ascii_letters, k=8))
+    return "".join(random.choices(string.ascii_letters, k=8))
+
 
 class NonStandardIdPost(IndexMixin, models.Model):
     crazy_id = models.CharField(max_length=128, default=rand_id, primary_key=True)
@@ -79,6 +82,20 @@ class NonStandardIdPost(IndexMixin, models.Model):
         filterable_fields = ("title",)
         searchable_fields = ("crazy_id", "title", "body")
         displayed_fields = ("crazy_id", "title", "body")
+
+    def __str__(self):
+        return self.title
+
+
+class UuidIdPost(IndexMixin, models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+
+    class MeiliMeta:
+        filterable_fields = ("title",)
+        searchable_fields = ("id", "title", "body")
+        displayed_fields = ("id", "title", "body")
 
     def __str__(self):
         return self.title

@@ -1,6 +1,6 @@
 """Custom Django integration for MeiliSearch."""
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 # Optional Support for DJP, a Django Plugin System
 # https://djp.readthedocs.io/en/latest/index.html

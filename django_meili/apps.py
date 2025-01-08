@@ -43,11 +43,11 @@ class DjangoMeiliConfig(AppConfig):
                 # Since the primary key can be any field, we need to check if it is 'pk' or another field.
                 # If its 'pk', we can just use the model.pk, otherwise we need to get the value from the field.
                 pk = (
-                    model.pk
+                    model._meta.pk.value_to_string(model)
                     if model._meilisearch["primary_key"] == "pk"
                     else model._meta.get_field(
                         model._meilisearch["primary_key"]
-                    ).value_from_object(model)
+                    ).value_to_string(model)
                 )
 
                 # This bit makes sure that geo is only added if the model supports it.
@@ -59,7 +59,7 @@ class DjangoMeiliConfig(AppConfig):
                 ).add_documents(
                     [
                         serialized
-                        | {"id": pk, "pk": model.pk}
+                        | {"id": pk, "pk": model._meta.pk.value_to_string(model)}
                         | ({"_geo": geo} if geo else {})
                     ]
                 )
@@ -76,7 +76,6 @@ class DjangoMeiliConfig(AppConfig):
 
             model: IndexMixin = kwargs["instance"]
             if model.meili_filter():
-
                 # Since the primary key can be any field, we need to check if it is 'pk' or another field.
                 # If its 'pk', we can just use the model.pk, otherwise we need to get the value from the field.
                 pk = (

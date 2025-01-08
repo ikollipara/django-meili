@@ -171,8 +171,8 @@ class IndexMixin(models.Model):
         )[0]
 
         if getattr(self.MeiliMeta, "include_pk_in_search", False):
-            serialized_model["fields"][self.MeiliMeta.primary_key] = getattr(
-                self, self.MeiliMeta.primary_key
+            serialized_model["fields"][self.MeiliMeta.primary_key] = (
+                self._meta.get_field(self.MeiliMeta.primary_key).value_to_string(self)
             )
         return serialized_model["fields"]
 
