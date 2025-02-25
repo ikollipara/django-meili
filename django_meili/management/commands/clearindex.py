@@ -21,7 +21,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         model = self._resolve_model(options["model"])
         index = _client.get_index(model._meilisearch["index_name"])
-        index.delete_all_documents()
+        task = index.delete_all_documents()
+        finished = _client.wait_for_task(task.task_uid)
+        if finished.status == "failed":
+            raise Exception(finished)
         self.stdout.write(self.style.SUCCESS(f"Cleared index for {model}"))
 
     def _resolve_model(self, model: str) -> type[IndexMixin]:
