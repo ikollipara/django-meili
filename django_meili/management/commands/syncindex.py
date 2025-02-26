@@ -54,15 +54,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         Model = self._resolve_model(options["model"])
-
+        tasks = []
         for qs in batch_qs(Model.objects.all(), options["batch_size"]):
-            task = _client.get_index(Model.__name__).add_documents(
+            tasks.append(_client.get_index(Model._meilisearch["index_name"]).add_documents(
                 [self._serialize(m) for m in qs if m.meili_filter()]
-            )
-        finished = _client.wait_for_task(task.task_uid)
-        if finished.status == "failed":
-            self.stderr.write(self.style.ERROR(finished.error))
-            exit(1)
+            ))
+        for task in tasks:
+            finished = _client.wait_for_task(task.task_uid)
+            if finished.status == "failed":
+                self.stderr.write(self.style.ERROR(finished.error))
+                exit(1)
         self.stdout.write(self.style.SUCCESS(f"Synced index for {options['model']}"))
 
     def _serialize(self, model: IndexMixin) -> dict:

@@ -99,3 +99,24 @@ class UuidIdPost(IndexMixin, models.Model):
 
     def __str__(self):
         return self.title
+
+class IndexNamePost(IndexMixin, models.Model):
+    """Model definition for Post."""
+
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+
+    class Meta:
+        """Meta definition for Post."""
+
+        verbose_name = "Post"
+        verbose_name_plural = "Posts"
+
+    class MeiliMeta:
+        filterable_fields = ("title",)
+        searchable_fields = ("id", "title", "body")
+        displayed_fields = ("id", "title", "body")
+        index_name = "custom_index_name"
+
+    def __str__(self):
+        return self.title
