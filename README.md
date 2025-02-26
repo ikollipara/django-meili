@@ -116,6 +116,16 @@ It attempts to mimic the django queryset API, but differs in 2 notable ways:
 1. To do geo-filtering, you pass a positional argument
 2. Not all queryset operations are implemented.
 
+### Commands
+
+#### `python manage.py syncindex`
+
+Sync the given index with the current database state. This will always be done synchronously.
+
+#### `python manage.py clearindex`
+
+Clearn the given index. This will always be done synchronously.
+
 ## Development
 
 1. clone the repo
