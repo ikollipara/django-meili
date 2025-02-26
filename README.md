@@ -124,7 +124,7 @@ Sync the given index with the current database state. This will always be done s
 
 #### `python manage.py clearindex`
 
-Clearn the given index. This will always be done synchronously.
+Clear the given index. This will always be done synchronously.
 
 ## Development
 
