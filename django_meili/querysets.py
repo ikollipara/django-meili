@@ -8,6 +8,8 @@ This module contains the QuerySet classes for the Django MeiliSearch app.
 # Imports
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self, Type
 
+from django.db.models import Case, When
+
 from ._client import client
 
 if TYPE_CHECKING:
@@ -258,6 +260,8 @@ class IndexQuerySet:
             },
         )
         id_field = getattr(self.model.MeiliMeta, "primary_key", "id")
-        return self.model.objects.filter(
-            pk__in=[hit[id_field] for hit in results.get("hits", [])]
+        pk_list = [hit[id_field] for hit in results.get("hits", [])]
+        preserved_order = Case(
+            *[When(pk=pk, then=pos) for pos, pk in enumerate(pk_list)]
         )
+        return self.model.objects.filter(pk__in=pk_list).order_by(preserved_order)
