@@ -2,17 +2,34 @@
 #    uv export --no-hashes
 -e .
 annotated-types==0.7.0
+    # via pydantic
 asgiref==3.8.1
+    # via django
 camel-converter==4.0.1
+    # via meilisearch
 certifi==2024.8.30
+    # via requests
 charset-normalizer==3.4.0
-django>=4.2
+    # via requests
+django==5.1.3
+    # via django-meili
 idna==3.10
+    # via requests
 meilisearch==0.31.6
+    # via django-meili
 pydantic==2.10.2
+    # via camel-converter
 pydantic-core==2.27.1
+    # via pydantic
 requests==2.32.3
+    # via meilisearch
 sqlparse==0.5.2
+    # via django
 typing-extensions==4.12.2
+    # via
+    #   pydantic
+    #   pydantic-core
 tzdata==2024.2 ; sys_platform == 'win32'
+    # via django
 urllib3==2.2.3
+    # via requests
