@@ -35,4 +35,4 @@ jobs:
           pip install -r requirements.txt
 
       - name: Test package
-        run: ./manage.py test
+        run: python manage.py test
