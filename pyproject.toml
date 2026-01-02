@@ -7,13 +7,16 @@ name = "django-meili"
 authors = [{ name = "Ian Kollipara", email = "ian.kollipara@cune.edu" }]
 dynamic = ["version", "description"]
 readme = "README.md"
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.12,<3.15"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["django", "meilisearch"]
+dependencies = [
+    "django>=6.0",
+    "meilisearch>=0.38.0",
+]
 
 [project.optional-dependencies]
 djp = ["djp"]
