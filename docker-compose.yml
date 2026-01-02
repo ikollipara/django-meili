@@ -1,0 +1,7 @@
+services:
+  meili:
+    image: getmeili/meilisearch
+    ports:
+      - 7700:7700
+    environment:
+      MEILI_LOG_LEVEL: INFO

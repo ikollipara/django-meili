@@ -2,3 +2,15 @@
 prek = "latest"
 python = "3.13"
 uv = "latest"
+
+[tasks.setup]
+description = "Setup the Project"
+run = [
+  "uv sync",
+  "uv run manage.py migrate",
+]
+
+[tasks.test]
+description = "Test the Project"
+run = "uv run manage.py test"
+env = { DEBUG = 1 }
