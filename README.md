@@ -2,10 +2,7 @@
 
 ![](./docs/Meilisearch_-_Django.jpg)
 
-A package to integrate Meilisearch with Django in a seamless way. This pacakge is tested on Meilisearch `v1.20` - `v1.24`.
-
-> [!NOTE]
-> This package currently does not support Python 3.14 due to issues with pydantic-core (see #33)
+A package to integrate Meilisearch with Django in a seamless way. This pacakge is tested on Meilisearch `v1.24` - `v1.31`.
 
 ## Install
 ```
