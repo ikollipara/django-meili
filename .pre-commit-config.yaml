@@ -1,11 +1,5 @@
 repos:
-  - repo: local
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.24
     hooks:
-      - id: uv-lock-check
-        name: uv lock --check
-        entry: uv lock --check
-        language: python
-        files: "^(pyproject.toml|uv.lock)$"
-        pass_filenames: false
-        additional_dependencies:
-          - uv
+      - id: uv-lock
