@@ -129,8 +129,8 @@ Clear the given index. This will always be done synchronously.
 ## Development
 
 1. clone the repo
-2. ./bin/setup.sh
-3. ./bin/test.sh
+2. `mise setup`
+3. `mise test`
 4. Develop
 
 ## Contact
