@@ -155,11 +155,18 @@ class IndexMixin(models.Model):
         How to serialize the model to a dictionary to be used by meilisearch.
 
         By default uses django.core.serializers.serialize and json.loads
+        Only serializes fields defined in displayed_fields, searchable_fields, and filterable_fields.
         """
 
         from json import loads
 
         from django.core.serializers import serialize
+
+        fields = {
+            *(self.MeiliMeta.displayed_fields or []),
+            *(self.MeiliMeta.searchable_fields or []),
+            *(self.MeiliMeta.filterable_fields or []),
+        }
 
         serialized_model = loads(
             serialize(
@@ -167,6 +174,7 @@ class IndexMixin(models.Model):
                 [self],
                 use_natural_foreign_keys=True,
                 use_natural_primary_keys=True,
+                fields=list(fields),
             )
         )[0]
 
@@ -174,6 +182,7 @@ class IndexMixin(models.Model):
             serialized_model["fields"][self.MeiliMeta.primary_key] = (
                 self._meta.get_field(self.MeiliMeta.primary_key).value_to_string(self)
             )
+
         return serialized_model["fields"]
 
     def meili_geo(self) -> MeiliGeo:
