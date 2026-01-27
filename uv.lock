@@ -111,7 +111,7 @@ djp = [
 
 [package.metadata]
 requires-dist = [
-    { name = "django", specifier = ">=6.0" },
+    { name = "django", specifier = ">=5.2" },
     { name = "djp", marker = "extra == 'djp'" },
     { name = "meilisearch", specifier = ">=0.38.0" },
 ]

@@ -14,7 +14,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "django>=6.0",
+    "django>=5.2",
     "meilisearch>=0.38.0",
 ]
 
