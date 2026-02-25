@@ -99,5 +99,5 @@ class DjangoMeiliConfig(AppConfig):
         # This loop connects the add_model and delete_model functions to the post_save and post_delete signals of all
         # Its also why the `django_meili` app needs to be loaded before all the user apps in the `INSTALLED_APPS` list.
         for model in IndexMixin.__subclasses__():
-            post_save.connect(add_model, sender=model)
-            post_delete.connect(delete_model, sender=model)
+            post_save.connect(add_model, sender=model, weak=False)
+            post_delete.connect(delete_model, sender=model, weak=False)
